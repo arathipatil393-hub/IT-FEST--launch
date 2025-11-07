@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IT Fest 2025 Launch</title>
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle, #001a33 0%, #000000 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      color: #00ffff;
+      font-family: 'Consolas', monospace;
+    }
+
+    h1, h2 {
+      text-align: center;
+      opacity: 0;
+    }
+
+    #countdown {
+      font-size: 4em;
+      animation: fadeIn 0.5s forwards;
+    }
+
+    #launchText {
+      font-size: 2em;
+      animation: glow 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #00ffff; }
+      to { text-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff; }
+    }
+
+    /* Confetti canvas */
+    #confetti {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* Particle animation */
+    .particles {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      top: 0; left: 0;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px; height: 4px;
+      background: #00ffff;
+      border-radius: 50%;
+      animation: move 8s linear infinite;
+    }
+
+    @keyframes move {
+      from { transform: translateY(100vh) scale(0); opacity: 1; }
+      to { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti"></canvas>
+  <div class="particles"></div>
+  
+  <h1 id="countdown">Initializing System...</h1>
+  <h2 id="launchText" style="display:none;">🎉 SYSTEM ONLINE 🎉<br>WELCOME TO<br><span style="color:#00ffcc;">IT FEST 2025</span> 🚀</h2>
+
+  <audio id="launchSound">
+    <source src="launch.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    /* Particle animation */
+    const container = document.querySelector('.particles');
+    for (let i = 0; i < 50; i++) {
+      const p = document.createElement('div');
+      p.classList.add('particle');
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.animationDuration = (3 + Math.random() * 5) + 's';
+      container.appendChild(p);
+    }
+
+    /* Confetti setup */
+    const canvas = document.getElementById('confetti');
+    const ctx = canvas.getContext('2d');
+    let pieces = [];
+    const numPieces = 200;
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function initConfetti() {
+      for (let i = 0; i < numPieces; i++) {
+        pieces.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          size: Math.random() * 6 + 2,
+          speed: Math.random() * 3 + 1,
+          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+          rotation: Math.random() * 360
+        });
+      }
+    }
+
+    function drawConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pieces.forEach((p) => {
+        ctx.fillStyle = p.color;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation * Math.PI / 180);
+        ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+        ctx.restore();
+      });
+    }
+
+    function updateConfetti() {
+      pieces.forEach((p) => {
+        p.y += p.speed;
+        p.rotation += p.speed;
+        if (p.y > canvas.height) p.y = 0 - p.size;
+      });
+    }
+
+    function loop() {
+      drawConfetti();
+      updateConfetti();
+      requestAnimationFrame(loop);
+    }
+
+    initConfetti();
+
+    /* Countdown logic */
+    const countdown = document.getElementById("countdown");
+    const launchText = document.getElementById("launchText");
+    const audio = document.getElementById("launchSound");
+
+    let steps = ["System Booting...", "3", "2", "1", "Access Granted!"];
+    let i = 0;
+
+    function nextStep() {
+      countdown.style.opacity = 0;
+      setTimeout(() => {
+        if (i < steps.length) {
+          countdown.textContent = steps[i];
+          countdown.style.opacity = 1;
+          i++;
+          setTimeout(nextStep, 1000);
+        } else {
+          startLaunch();
+        }
+      }, 400);
+    }
+
+    function startLaunch() {
+      countdown.style.display = "none";
+      launchText.style.display = "block";
+      audio.play();
+      loop(); // start confetti
+    }
+
+    nextStep();
+  </script>
+</body>
+</html>
